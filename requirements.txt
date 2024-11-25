@@ -4,3 +4,8 @@ numpy
 pandas
 Flask
 pickle-mixin
+matplotlib
+seaborn
+scikit-learn
+imbalanced-learn
+pickle5
