@@ -26,7 +26,7 @@ To run this project, clone the repository and install the required dependencies 
 
 ```bash
 # Clone the repository
-git clone <repository_url>
+git clone (https://github.com/BCC-project/Breast-Cancer-classifications-.git)
 
 # Navigate to the project directory
 cd breast-cancer-classification
