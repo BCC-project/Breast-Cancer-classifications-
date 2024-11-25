@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Detection Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .bulk-input {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .input-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            background-color: #e9e9e9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        #prediction {
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Breast Cancer Detection Interface</h1>
+        <div class="bulk-input">
+            <textarea id="bulkInput" placeholder="Enter 30 comma-separated values here"></textarea>
+            <button id="fillInputs">Fill Inputs</button>
+        </div>
+        <div class="input-container">
+            <!-- Input fields will be dynamically generated here -->
+        </div>
+        <button id="predict">Predict</button>
+        <div id="result" class="result">
+            <h2>Result:</h2>
+            <p id="prediction"></p>
+            <p class="prediction_text">{{ prediction_text }}</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputContainer = document.querySelector('.input-container');
+            const bulkInput = document.getElementById('bulkInput');
+            const fillInputsButton = document.getElementById('fillInputs');
+            const predictButton = document.getElementById('predict');
+            const predictionElement = document.getElementById('prediction');
+
+            // Generate 30 input fields
+            for (let i = 1; i <= 30; i++) {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+
+                const label = document.createElement('label');
+                label.textContent = `Parameter ${i}:`;
+                label.setAttribute('for', `param${i}`);
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = `param${i}`;
+                input.name = `param${i}`;
+                input.step = '0.01';
+                input.required = true;
+
+                inputGroup.appendChild(label);
+                inputGroup.appendChild(input);
+                inputContainer.appendChild(inputGroup);
+            }
+
+            // Fill inputs from bulk input
+            fillInputsButton.addEventListener('click', function() {
+                const values = bulkInput.value.split(',').map(val => val.trim());
+                if (values.length !== 30) {
+                    alert('Please enter exactly 30 comma-separated values.');
+                    return;
+                }
+
+                const inputs = inputContainer.querySelectorAll('input[type="number"]');
+                inputs.forEach((input, index) => {
+                    input.value = values[index];
+                });
+            });
+
+            // Predict button click handler
+            predictButton.addEventListener('click', async function() {
+                const inputs = inputContainer.querySelectorAll('input[type="number"]');
+                const values = Array.from(inputs).map(input => parseFloat(input.value));
+
+                if (values.some(isNaN)) {
+                    alert('Please fill in all fields with valid numbers.');
+                    return;
+                }
+
+                // Create form data
+                const formData = new FormData();
+                values.forEach((value, index) => {
+                    formData.append(`param${index + 1}`, value);
+                });
+
+                try {
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(result, 'text/html');
+                    const predictionText = doc.querySelector('.prediction_text')?.textContent;
+                    
+                    predictionElement.textContent = predictionText || 'Prediction not available';
+                } catch (error) {
+                    console.error('Error:', error);
+                    predictionElement.textContent = 'Error occurred while making prediction';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

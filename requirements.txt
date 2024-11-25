@@ -1,0 +1,6 @@
+# TO INSTALL DO THIS--------> pip install -r requirements.txt
+
+numpy
+pandas
+Flask
+pickle-mixin
